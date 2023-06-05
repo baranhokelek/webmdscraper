@@ -1,5 +1,7 @@
 # webmdscraper
 
+Before running the scraper, create a virtual Python environment and make sure that `scrapy` module is installed.
+
 Run the following commands:
 
 ```

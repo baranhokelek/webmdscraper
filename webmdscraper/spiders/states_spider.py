@@ -9,8 +9,9 @@ class StatesSpider(scrapy.Spider):
         self.start_urls = ["https://doctor.webmd.com/providers"]
 
     def parse(self, response):
-        print("Current Directory:", os.getcwd())
         state_urls = response.css('a.state-name::attr(href)').getall()
+        if not os.path.exists('./data'):
+            os.makedirs('./data')
         with open("./data/state_urls.txt", "a+") as statesfile:
             for state_url in state_urls:
                 statesfile.write(state_url)

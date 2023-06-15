@@ -10,20 +10,11 @@ class DoctorSpider(scrapy.Spider):
 
     def parse(self, response, **kwargs):
         request_url_split = response.request.url.split("/")
-        current_url = response.request.url
-
-        if "pagenumber" not in current_url:
-            page_number = 1
-        else:
-            page_number = int(list(current_url.partition("pagenumber="))[-1])
-
         for doctor in response.css('div.webmd-card__body')[6:-2]:
             metadata = {
                 "name": doctor.css('a.prov-name').css('h2::text').get().strip(),
                 "specialty": doctor.css('p.prov-specialty::text').get(),
-                "city": request_url_split[-1].split("?")[0],
                 "state": request_url_split[-2],
-                "page": page_number,
                 "link": doctor.css('a.prov-name::attr(href)').get(),
             }
             yield scrapy.Request(metadata["link"], callback=self.get_doctor_website_info, meta=metadata)
@@ -31,18 +22,14 @@ class DoctorSpider(scrapy.Spider):
     def get_doctor_website_info(self, response):
         name = response.meta["name"]
         specialty = response.meta["specialty"]
-        city = response.meta["city"].capitalize()
         state = response.meta["state"].capitalize()
         link = response.meta["link"]
-        page = response.meta["page"]
         website_data = {}
         conditions_treated = response.css('div.profile-basecard.conditions-container').css('div[data-profilecontent*="condition"]').css('a::text').getall()
         hospital_affiliations = response.css('div.profile-basecard.conditions-container').css('div[data-profilecontent*="hospital"]').css('a::text').getall()
         website_data["Name"] = name
         website_data["Specialties"] = specialty
-        website_data["City"] = city
         website_data["State"] = state
-        website_data["Page"] = page
         website_data["Link"] = link
         website_data["Conditions Treated"] = conditions_treated
         website_data["Hospital Affiliations"] = hospital_affiliations
